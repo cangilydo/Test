@@ -1,5 +1,8 @@
-﻿using MediatR;
+﻿using ApiService.Authorize;
 
+using MediatR;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using Shared.Domains;
@@ -11,6 +14,7 @@ namespace ApiService.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [InnerAuthorize]
     public class CheckOutController : ControllerBase
     {
         private readonly ILogger<CheckOutController> _logger;
