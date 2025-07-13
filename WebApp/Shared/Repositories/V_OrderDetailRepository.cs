@@ -10,7 +10,7 @@ namespace Shared.Repositories
 {
     public interface IV_OrderDetailRepository : IRepoGenerate<V_OrderDetail>
     {
-        Task<PagedResult<V_OrderDetail>> SearchPaging(string searchText, int pageIndex, int pageSize);
+        Task<PagedQueryAbleResult<V_OrderDetail>> SearchPaging(string searchText, int pageIndex, int pageSize);
     }
     public class V_OrderDetailRepository : RepoGenerate<V_OrderDetail>, IV_OrderDetailRepository
     {
@@ -18,7 +18,7 @@ namespace Shared.Repositories
         {
         }
 
-        public async Task<PagedResult<V_OrderDetail>> SearchPaging(string searchText, int pageIndex, int pageSize)
+        public async Task<PagedQueryAbleResult<V_OrderDetail>> SearchPaging(string searchText, int pageIndex, int pageSize)
         {            
             searchText = string.IsNullOrEmpty(searchText) ? string.Empty : ConvertHelper.ConvertUnicode(searchText.Trim());
             var res = string.IsNullOrEmpty(searchText) ? GetAll() :
@@ -36,10 +36,10 @@ namespace Shared.Repositories
                 .Take(pageSize)
                 .ToListAsync();
 
-            return new PagedResult<V_OrderDetail>()
+            return new PagedQueryAbleResult<V_OrderDetail>()
             {
                 Count = total,
-                Result = items
+                Result = items.AsQueryable()
             };
         }
     }

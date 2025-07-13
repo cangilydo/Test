@@ -16,9 +16,10 @@ namespace ApiService.Services
         Task<string> CallPayment();
         List<Order> GetOrderByIds(List<Guid> ids);
         Task<bool> UpdateOrder(List<Order> input);
-        void HandleProcess(List<Order> inputs);
+        Task HandleProcess(List<Order> inputs);
 
-        Task<PagedResult<V_OrderDetail>> SearchPaging(string searchText, int pageIndex, int pageSize);
+        Task<PagedQueryAbleResult<V_OrderDetail>> SearchPaging(string searchText, int pageIndex, int pageSize);
+        Task DoneAudit(CheckOutCmd request);
     }
     public class CheckOutService : ICheckOutService
     {
@@ -62,6 +63,20 @@ namespace ApiService.Services
             return string.Empty;
         }
 
+        public async Task DoneAudit(CheckOutCmd request)
+        {
+            foreach (var s in request.OrderIdPair)
+            {
+                var auditItem = _auditRepository.Find(x => x.Id == s.Key).FirstOrDefault();
+
+                if (auditItem == null)
+                    continue;
+                auditItem.Status = (int)EAudit.Done;
+
+                await _auditRepository.UpdateAsync(auditItem);
+            };
+        }
+
         public async Task<string> CallPayment()
         {
             var random = new Random();
@@ -95,20 +110,21 @@ namespace ApiService.Services
             return true;
         }
 
-        public void HandleProcess(List<Order> inputs)
+        public async Task HandleProcess(List<Order> inputs)
         {
+            var task = new List<Task>();
             inputs.ForEach(s =>
             {
                 if (s.Type != null)
                 {
                     var productInstance = _productGenerate.CreateProduct(s.Type.Value.ToString(), _serviceProvider);
-                    productInstance.Process(s.Id);
+                    task.Add(productInstance.Process(s.Id));
                 }
-
             });
+            await Task.WhenAll(task);
         }
 
-        public async Task<PagedResult<V_OrderDetail>> SearchPaging(string searchText, int pageIndex, int pageSize)
+        public async Task<PagedQueryAbleResult<V_OrderDetail>> SearchPaging(string searchText, int pageIndex, int pageSize)
         {
             var res = await _V_OrderDetailRepository.SearchPaging(searchText, pageIndex, pageSize);
             return res;

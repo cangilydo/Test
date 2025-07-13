@@ -9,7 +9,7 @@ using Shared.Repositories;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-//builder.Services.AddHostedService<EmailWorker>();
+builder.Services.AddHostedService<EmailWorker>();
 builder.Services.AddHostedService<ProductWorker>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>

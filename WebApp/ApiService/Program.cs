@@ -1,8 +1,10 @@
-using ApiService.Handler.Products;
+﻿using ApiService.Handler.Products;
 using ApiService.Services;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
+using Shared.AutoMapper;
 using Shared.EF;
 using Shared.Repositories;
 
@@ -19,7 +21,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddMediatR(s => {s.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());});
+builder.Services.AddMediatR(s =>
+{
+    s.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+});
 
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IV_OrderDetailRepository, V_OrderDetailRepository>();
@@ -34,6 +39,11 @@ builder.Services.AddHttpClient("ExternalApi", client =>
 });
 
 builder.Services.AddScoped<ICheckOutService, CheckOutService>();
+
+builder.Services.AddAutoMapper((s) =>
+{
+    s.AddProfile<MappingProfile>();
+});
 
 var productGenerator = new ProductGenerate();
 builder.Services.AddSingleton(productGenerator);

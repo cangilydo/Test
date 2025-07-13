@@ -24,16 +24,16 @@ namespace ApiService.Controllers
 
         [Route("process")]
         [HttpPost]
-        public async Task<ActionResult<string>> Process([FromBody] CheckOutCmd request)
+        public async Task<ActionResult<BaseRes<string>>> Process([FromBody] CheckOutCmd request)
         {
             var res = await _mediator.Send(request);
 
-            return !string.IsNullOrEmpty(res) ? Ok() : NotFound();
+            return res;
         }
 
         [Route("list")]
         [HttpPost]
-        public async Task<ActionResult<PagedResult<V_OrderDetail>>> List([FromBody] SearchQuery request)
+        public async Task<ActionResult<BaseRes<PagedResult<OrderDetailDto>>>> List([FromBody] SearchQuery request)
         {
             var res = await _mediator.Send(request);
 

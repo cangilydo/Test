@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Shared.Requests.Queries
 {
-    public class SearchQuery :  IRequest<PagedResult<V_OrderDetail>>
+    public class SearchQuery :  IRequest<BaseRes<PagedResult<OrderDetailDto>>>
     {
         public int PageIndex { get; set; }
         public int PageSize { get; set; }

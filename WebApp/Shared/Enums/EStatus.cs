@@ -54,4 +54,11 @@ namespace Shared.Enums
         Email = 0,
         Product = 1
     }
+
+    public enum EResStatus
+    {
+        Success = 0,
+        ValidateError = 1,
+        SystemError = 2
+    }
 }

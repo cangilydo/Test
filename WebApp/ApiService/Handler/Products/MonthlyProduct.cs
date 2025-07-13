@@ -31,8 +31,6 @@ namespace ApiService.Handler.Products
                         Status = (int)EQueueStatus.Create,
                         Type = (int)EQueueType.Product
                     });
-
-
                 }
                 catch (Exception ex)
                 {

@@ -3,13 +3,14 @@ using ApiService.Services;
 
 using MediatR;
 
+using Shared.Dto;
 using Shared.Enums;
 using Shared.Repositories;
 using Shared.Requests.Commands;
 
 namespace ApiService.Handler.Commands
 {
-    public class CheckOutHandler : IRequestHandler<CheckOutCmd, string>
+    public class CheckOutHandler : IRequestHandler<CheckOutCmd, BaseRes<string>>
     {
         private readonly ICheckOutService _checkOutService;
         private readonly ILogger<CheckOutHandler> _logger;
@@ -20,14 +21,18 @@ namespace ApiService.Handler.Commands
             _logger = logger;
         }
 
-        public async Task<string> Handle(CheckOutCmd request, CancellationToken cancellationToken)
+        public async Task<BaseRes<string>> Handle(CheckOutCmd request, CancellationToken cancellationToken)
         {
             try
             {
                 var auditRes = await _checkOutService.AuditCheck(request);
                 if (!string.IsNullOrEmpty(auditRes))
                 {
-                    return auditRes;
+                    return new BaseRes<string>()
+                    {
+                        Status = EResStatus.ValidateError,
+                        Data = auditRes
+                    };
                 }
                 var orderIds = new List<Guid>();
                 foreach (var item in request.OrderIdPair)
@@ -44,7 +49,11 @@ namespace ApiService.Handler.Commands
                         s.Status = (int)EOrderStatus.ErrorPaid;
                         s.UpdatedOn = DateTime.Now.ToUniversalTime();
                     });
-                    return paymentRes;
+                    return new BaseRes<string>()
+                    {
+                        Status = EResStatus.ValidateError,
+                        Data = paymentRes
+                    };
                 }
                 else
                 {
@@ -57,14 +66,24 @@ namespace ApiService.Handler.Commands
 
                 await _checkOutService.UpdateOrder(orderLst);
 
-                _checkOutService.HandleProcess(orderLst);
+                await _checkOutService.HandleProcess(orderLst);
 
-                return "Processing";
+                await _checkOutService.DoneAudit(request);
+
+                return new BaseRes<string>()
+                {
+                    Status = EResStatus.Success,
+                    Data = "processing"
+                }; 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "CheckOutCmd exception: ");
-                return string.Empty;
+                return new BaseRes<string>()
+                {
+                    Status = EResStatus.SystemError,
+                    Data = ex.Message
+                };
             }
         }
     }
